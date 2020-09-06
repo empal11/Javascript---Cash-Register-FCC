@@ -1,0 +1,68 @@
+const words = ['ONE HUNDRED', 'TWENTY', 'TEN', 'FIVE', 'ONE','QUARTER', 'DIME', 'NICKEL', 'PENNY']
+
+const moneyDictionary = {
+	'PENNY': 1,
+	'NICKEL': 5,
+	'DIME': 10,
+	'QUARTER': 25,
+	'ONE': 100,
+	'FIVE': 500,
+	'TEN': 1000,
+	'TWENTY': 2000,
+	'ONE HUNDRED': 10000,
+};
+
+const moneyFromCid = (restToPay, cidObj, changeGive, moneyType) => {
+	if (restToPay >= moneyDictionary[moneyType] && cidObj[moneyType]) {
+		if (restToPay >= cidObj[moneyType]) {
+			const amtToSubstract = cidObj[moneyType];
+			restToPay -= amtToSubstract;
+			changeGive.push([moneyType, amtToSubstract / 100]);
+			cidObj[moneyType] = 0;
+		} else {
+		const amtToSubstract =
+		 	Math.floor(restToPay / moneyDictionary[moneyType] * 
+		 	moneyDictionary[moneyType]);
+		 restToPay -= amtToSubstract;
+		 changeGive.push([moneyType, amtToSubstract / 100]);
+		 cidObj[moneyType] -= amtToSubstract;
+		}
+	}  
+	return [restToPay, cidObj, changeGive];
+console.log(cidObj);
+};
+
+
+function checkCashRegister(price, cash, cid) {
+	let restToPay = Math.round((cash - price) * 100);
+
+	let cidObj = cid.reduce((acc,[moneyType,amt]) => {
+		return {
+			...acc,
+			[moneyType]: Math.round(amt * 100)
+		}
+	}, {});
+
+	let changeGive = [];
+
+[restToPay, cidObj, changeGive] = moneyFromCid(restToPay, cidObj, changeGive,  'ONE HUNDRED');
+[restToPay, cidObj, changeGive] = moneyFromCid(restToPay, cidObj, changeGive,  'TWENTY');
+[restToPay, cidObj, changeGive] = moneyFromCid(restToPay, cidObj, changeGive,  'TEN');
+[restToPay, cidObj, changeGive] = moneyFromCid(restToPay, cidObj, changeGive, 'FIVE');
+[restToPay, cidObj, changeGive] = moneyFromCid(restToPay, cidObj, changeGive, 'ONE');
+[restToPay, cidObj, changeGive] = moneyFromCid(restToPay, cidObj, changeGive, 'QUARTER');
+[restToPay, cidObj, changeGive] = moneyFromCid(restToPay, cidObj, changeGive,  'DIME');
+[restToPay, cidObj, changeGive] = moneyFromCid(restToPay, cidObj, changeGive, 'NICKEL');
+[restToPay, cidObj, changeGive] = moneyFromCid(restToPay, cidObj, changeGive, 'PENNY');
+
+if (restToPay > 0) {
+	return {status: 'INSUFFICIENT_FUNDS' , change: []};
+}
+
+const amtLeftInCid = Object.values(cidObj).reduce((acc, amt) => acc + amt, 0);
+	if (amtLeftInCid > 0) {
+	return {status: 'OPEN', change:changeGive};
+	}
+	return {status: 'CLOSED', change: cid};
+};
+
